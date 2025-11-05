@@ -21,8 +21,8 @@ const corsOptions = {
     'http://localhost:4000',
     'http://localhost:5173',
     'http://localhost:5174',
-    'https://rmantonio-coursebooking.vercel.app',
-    'http://rmantonio-coursebooking.vercel.app'
+    'http://rmantonio-coursebooking.vercel.app',
+    'https://rmantonio-coursebooking.vercel.app'
   ],
   credentials: true,
   optionsSuccessStatus: 200
