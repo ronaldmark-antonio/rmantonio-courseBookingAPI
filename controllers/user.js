@@ -34,35 +34,53 @@ module.exports.checkEmailExists = (req, res) => {
 
 
 //[SECTION] User registration
-module.exports.registerUser = (req, res) => {
-    if (typeof req.body.firstName !== 'string' || typeof req.body.lastName !== 'string') {
-        return res.status(400).send({message: 'Invalid data type'});
-    }
-    // Checks if the email is in the right format
-    else if (!req.body.email.includes("@")){
-        return res.status(400).send({message: 'Invalid email format'});
-    }
-    // Checks if the mobile number has the correct number of characters
-    else if (req.body.mobileNo.length !== 11){
-        return res.status(400).send({ message: 'Mobile number is invalid'});
-    }
-    // Checks if the password has atleast 8 characters
-    else if (req.body.password.length < 8) {
-        return res.status(400).send({message: 'Password must be atleast 8 characters long'});
-    // If all needed requirements are achieved
-    } else {
-        let newUser = new User({
-            firstName : req.body.firstName,
-            lastName : req.body.lastName,
-            email : req.body.email,
-            mobileNo : req.body.mobileNo,
-            password : bcrypt.hashSync(req.body.password, 10)
-        })
+module.exports.registerUser = async (req, res) => {
+    try {
 
-        return newUser.save()
-        .then((result) => res.status(201).send({message: 'User registered succesfully',
-            user: result}))
-        .catch(error => errorHandler(error, req, res));
+        // Validate first & last name
+        if (typeof req.body.firstName !== 'string' || typeof req.body.lastName !== 'string') {
+            return res.status(400).send({ message: 'Invalid data type' });
+        }
+
+        // Validate email format
+        if (!req.body.email.includes("@")) {
+            return res.status(400).send({ message: 'Invalid email format' });
+        }
+
+        // CHECK IF EMAIL ALREADY EXISTS
+        const existingUser = await User.findOne({ email: req.body.email });
+
+        if (existingUser) {
+            return res.status(409).send({ message: "Email already exists" });
+        }
+
+        // Validate mobile number
+        if (req.body.mobileNo.length !== 11) {
+            return res.status(400).send({ message: 'Mobile number is invalid' });
+        }
+
+        // Validate password length
+        if (req.body.password.length < 8) {
+            return res.status(400).send({ message: 'Password must be atleast 8 characters long' });
+        }
+
+        // Create new user
+        let newUser = new User({
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            email: req.body.email,
+            mobileNo: req.body.mobileNo,
+            password: bcrypt.hashSync(req.body.password, 10)
+        });
+
+        await newUser.save();
+
+        return res.status(201).send({
+            message: 'User registered successfully'
+        });
+
+    } catch (error) {
+        errorHandler(error, req, res);
     }
 };
 
