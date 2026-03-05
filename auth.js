@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const JWT_SECRET_KEY="CourseBookingAPI"
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "CourseBookingAPI";
 require('dotenv').config();
 
 module.exports.createAccessToken = (user) => {
