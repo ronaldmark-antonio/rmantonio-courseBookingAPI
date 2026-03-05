@@ -13,26 +13,26 @@ module.exports.createAccessToken = (user) => {
 }
 
 module.exports.verify = (req, res, next) => {
+    console.log("HEADERS:", req.headers);
+
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
+        console.log("NO AUTH HEADER");
         return res.status(401).send({ message: "No token provided" });
     }
 
     const token = authHeader.split(" ")[1];
+    console.log("TOKEN RECEIVED:", token);
 
-    if (!token) {
-        return res.status(401).send({ message: "Invalid token format" });
-    }
-
-    jwt.verify(token, JWT_SECRET_KEY, (err, decodedToken) => {
+    jwt.verify(token, process.env.JWT_SECRET_KEY || "CourseBookingAPI", (err, decoded) => {
         if (err) {
-            return res.status(403).send({
-                message: "Invalid or expired token"
-            });
+            console.log("JWT ERROR:", err.message);
+            return res.status(403).send({ message: err.message });
         }
 
-        req.user = decodedToken;
+        console.log("DECODED:", decoded);
+        req.user = decoded;
         next();
     });
 };
