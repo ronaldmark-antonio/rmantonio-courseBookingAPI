@@ -13,35 +13,29 @@ module.exports.createAccessToken = (user) => {
 }
 
 module.exports.verify = (req, res, next) => {
-    console.log(req.headers.authorization);
+    const authHeader = req.headers.authorization;
 
-    let token = req.headers.authorization;
-
-    if(typeof token === "undefined"){
-        return res.send({ auth: "Failed. No Token" });
-    } else {
-        console.log(token);
-        token = token.slice(7, token.lenght);
-        console.log(token);
-
-        jwt.verify(token, JWT_SECRET_KEY, function(err, decodedToken){
-            if(err) {
-                return res.status(403).send({
-                    auth: "Failed",
-                    message: err.message
-                });
-            } else {
-                console.log("Result from verify method:")
-                console.log(decodedToken);
-
-                req.user = decodedToken;
-
-                next();
-            }
-        })
-
+    if (!authHeader) {
+        return res.status(401).send({ message: "No token provided" });
     }
-}
+
+    const token = authHeader.split(" ")[1];
+
+    if (!token) {
+        return res.status(401).send({ message: "Invalid token format" });
+    }
+
+    jwt.verify(token, JWT_SECRET_KEY, (err, decodedToken) => {
+        if (err) {
+            return res.status(403).send({
+                message: "Invalid or expired token"
+            });
+        }
+
+        req.user = decodedToken;
+        next();
+    });
+};
 
 module.exports.verifyAdmin = (req, res, next) => {
     if(req.user.isAdmin) {

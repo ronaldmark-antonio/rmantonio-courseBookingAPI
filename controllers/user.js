@@ -98,11 +98,10 @@ module.exports.loginUser = (req, res) => {
 
 module.exports.getProfile = (req, res) => {
 
-    return User.findById(req.user.id)
+    return User.findById(req.user.id || req.user._id)
     .then(user => {
 
         if(!user) {
-            //if the user has an invalid token, we would be sending a message 'invalid signature'
             return res.status(403).send({message: 'invalid signature'})
         } else {
             user.password = "";
